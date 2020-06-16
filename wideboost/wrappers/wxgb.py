@@ -3,6 +3,30 @@ import xgboost as xgb
 from ..objectives.squareloss import squareloss_gradient_hessian
 from ..objectives.categoricallogloss import categoricallogloss_gradient_hessian
 from ..objectives.binarylogloss import binarylogloss_gradient_hessian
+from ..evals.classification import error, logloss, merror, mlogloss
+from ..evals.regression import squarederror
+
+class wxgb:
+    def __init__(self,obj,xgbobject):
+        self.obj = obj
+        self.xgbobject = xgbobject
+
+    def predict(self, dtrain):
+        # TODO: restructure objects to remove duplication
+        P = self.xgbobject.predict(dtrain)
+        P = P.reshape([P.shape[0],-1])
+        O = P.dot(self.obj.B)
+        return O
+
+class eval:
+    def __init__(self,feval,obj,name):
+        self.feval = feval
+        self.obj = obj
+        self.name = name
+
+    def __call__(self,preds,dtrain):
+        loss = self.feval(preds,dtrain,self.obj)
+        return self.name, loss
 
 def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
           feval=None,maximize=False,early_stopping_rounds=None,evals_result=None,
@@ -14,6 +38,7 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     # Overwrite needed params
     print("Overwriting param `num_class`")
     try:
+        # TODO this is ugly
         nclass = params["num_class"]
     except:
         params['num_class'] = 1
@@ -22,12 +47,13 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     params['num_class'] = params['num_class'] + params['extra_dims']
     params.pop('extra_dims')
 
-    print("Overwriting param `objective`")
+    print("Overwriting param `objective` while setting `obj` in train.")
     params['objective'] = 'reg:squarederror'
 
     try:
+        feval = get_eval_metric(params,obj)
         params.pop('eval_metric')
-        print("Removing param `eval_metric`.")
+        print("Moving param `eval_metric` to an feval.")
     except:
         None
 
@@ -37,11 +63,31 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     # TODO: base_score should be set depending on the objective chosen
     params['base_score'] = 0
 
-    return obj, xgb.train(params,dtrain,num_boost_round=num_boost_round,evals=evals,obj=obj,
+    xgbobject = xgb.train(params,dtrain,num_boost_round=num_boost_round,evals=evals,obj=obj,
           feval=feval,maximize=maximize,early_stopping_rounds=early_stopping_rounds,
           evals_result=evals_result,verbose_eval=verbose_eval,xgb_model=xgb_model,
           callbacks=callbacks)
 
+    return wxgb(obj,xgbobject)
+
+
+
+def predict(dtrain,xgbobject,obj):
+    P = xgbobject.predict(dtrain)
+    P = P.reshape([P.shape[0],-1])
+    O = P.dot(obj.B)
+    return O
+
+def get_eval_metric(params,obj):
+    output_dict = {
+        'error':eval(error,obj,'error'),
+        'logloss':eval(logloss,obj,'logloss'),
+        'merror':eval(merror,obj,'merror'),
+        'mlogloss':eval(mlogloss,obj,'mlogloss'),
+        'squarederror':eval(squarederror,obj,'squarederror')
+    }
+    print("Taking first argument of evals. Multiple evals not supported using xgboost backend.")
+    return output_dict[params['eval_metric'][0]]
 
 def get_objective(params):
     output_dict = {
