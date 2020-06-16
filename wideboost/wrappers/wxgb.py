@@ -10,7 +10,11 @@ class wxgb:
         self.xgbobject = xgbobject
 
     def predict(dtrain):
-        return predict(dtrain,self.xgbobject,self.obj)
+        # TODO: restructure objects to remove duplication
+        P = self.xgbobject.predict(dtrain)
+        P = P.reshape([P.shape[0],-1])
+        O = P.dot(self.obj.B)
+        return O
 
 def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
           feval=None,maximize=False,early_stopping_rounds=None,evals_result=None,
