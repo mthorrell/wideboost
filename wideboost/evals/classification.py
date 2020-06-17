@@ -13,7 +13,7 @@ def error(preds,dtrain,obj):
     p = 1*(logits > 0)
     p = p.reshape([p.shape[0],-1])
     
-    return ('error', np.mean(np.abs(p-y)>0.5))
+    return np.mean(np.abs(p-y)>0.5)
 
 def merror(preds,dtrain,obj):
     # TODO remove duplication
@@ -24,7 +24,7 @@ def merror(preds,dtrain,obj):
     logits = preds.dot(obj.B)
     p = np.argmax(logits,axis=1)
     
-    return ('error', np.mean(np.abs(p-y)>0.5))
+    return np.mean(np.abs(p-y)>0.5)
 
 def logloss(preds,dtrain,obj):
     # TODO remove duplication
@@ -40,7 +40,7 @@ def logloss(preds,dtrain,obj):
     
     p = (2 * p - 1) * y + 1 - p
     
-    return 'logloss', -np.mean(np.log(p))
+    return -np.mean(np.log(p))
 
 def mlogloss(preds,dtrain,obj):
     # TODO remove duplication
