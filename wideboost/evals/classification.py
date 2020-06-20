@@ -23,6 +23,7 @@ def merror(preds,dtrain,obj):
     
     logits = preds.dot(obj.B)
     p = np.argmax(logits,axis=1)
+    p = p.reshape([p.shape[0],-1])
     
     return np.mean(np.abs(p-y)>0.5)
 
