@@ -11,3 +11,6 @@ def squarederror(preds,dtrain,obj):
     P = preds.dot(obj.B)
 
     return 1/2 * np.mean(np.square(y - P))
+
+def rmse(preds,dtrain,obj):
+    return np.sqrt(2*squarederror(preds,dtrain,obj))

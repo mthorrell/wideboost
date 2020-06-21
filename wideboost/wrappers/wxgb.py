@@ -5,7 +5,7 @@ from ..objectives.squareloss import squareloss_gradient_hessian
 from ..objectives.categoricallogloss import categoricallogloss_gradient_hessian
 from ..objectives.binarylogloss import binarylogloss_gradient_hessian
 from ..evals.classification import error, logloss, merror, mlogloss
-from ..evals.regression import squarederror
+from ..evals.regression import squarederror, rmse
 
 # Thinnest possible wrapper for sklearn capabilities
 class wxgbModel(BaseEstimator):
@@ -123,7 +123,8 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     params['disable_default_eval_metric'] = 1
 
     # TODO: base_score should be set depending on the objective chosen
-    params['base_score'] = 0
+    # TODO: Allow some items to be overwritten by user. This being one of them.
+    params['base_score'] = 0.0
 
     xgbobject = xgb.train(params,dtrain,num_boost_round=num_boost_round,evals=evals,obj=obj,
           feval=feval,maximize=maximize,early_stopping_rounds=early_stopping_rounds,
@@ -146,7 +147,8 @@ def get_eval_metric(params,obj):
         'logloss':eval(logloss,obj,'logloss'),
         'merror':eval(merror,obj,'merror'),
         'mlogloss':eval(mlogloss,obj,'mlogloss'),
-        'squarederror':eval(squarederror,obj,'squarederror')
+        'squarederror':eval(squarederror,obj,'squarederror'),
+        'rmse':eval(rmse,obj,'rmse')
     }
     print("Taking first argument of eval_metric. Multiple evals not supported using xgboost backend.")
     return output_dict[params['eval_metric'][0]]
