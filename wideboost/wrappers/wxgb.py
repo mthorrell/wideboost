@@ -5,12 +5,13 @@ from ..objectives.squareloss import squareloss_gradient_hessian
 from ..objectives.categoricallogloss import categoricallogloss_gradient_hessian
 from ..objectives.binarylogloss import binarylogloss_gradient_hessian
 from ..evals.classification import error, logloss, merror, mlogloss
-from ..evals.regression import squarederror
+from ..evals.regression import squarederror, rmse
+from ..parameters.B import initialize_B
 
 # Thinnest possible wrapper for sklearn capabilities
 class wxgbModel(BaseEstimator):
-    def __init__(self,extra_dims=0,max_depth=None, eta=0.1, n_estimators=10,
-                 verbosity=None, objective=None, booster=None,
+    def __init__(self,extra_dims=0,btype='I',max_depth=None, eta=0.1, n_estimators=10,
+                 verbosity=None, objective=None, booster=None,num_class=None,
                  tree_method=None, n_jobs=None, gamma=None,
                  min_child_weight=None, max_delta_step=None, subsample=None,
                  colsample_bytree=None, colsample_bylevel=None,
@@ -21,6 +22,8 @@ class wxgbModel(BaseEstimator):
                  importance_type="gain", gpu_id=None,eval_metric="error",
                  validate_parameters=None,**kwargs):
         self.extra_dims = extra_dims
+        self.num_class = num_class
+        self.btype = btype
         self.n_estimators = n_estimators
         self.objective = objective
         self.max_depth = max_depth
@@ -95,7 +98,10 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
           verbose_eval=True,xgb_model=None,callbacks=None):
     
     params = param.copy()
-    assert params['extra_dims'] >= 0
+    if not isinstance(obj,xgb_objective):
+        assert params['extra_dims'] >= 0
+    else:
+        print("Using custom objective. Removed extra_dims restriction.")
 
     # Overwrite needed params
     print("Overwriting param `num_class`")
@@ -105,7 +111,11 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     except:
         params['num_class'] = 1
 
-    obj = get_objective(params)
+    if isinstance(obj,xgb_objective):
+        print("Found custom wideboost-compatible objective. Using user specified objective.")
+    else:
+        obj = get_objective(params)
+    
     params['num_class'] = params['num_class'] + params['extra_dims']
     params.pop('extra_dims')
 
@@ -123,7 +133,8 @@ def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
     params['disable_default_eval_metric'] = 1
 
     # TODO: base_score should be set depending on the objective chosen
-    params['base_score'] = 0
+    # TODO: Allow some items to be overwritten by user. This being one of them.
+    params['base_score'] = 0.0
 
     xgbobject = xgb.train(params,dtrain,num_boost_round=num_boost_round,evals=evals,obj=obj,
           feval=feval,maximize=maximize,early_stopping_rounds=early_stopping_rounds,
@@ -146,22 +157,23 @@ def get_eval_metric(params,obj):
         'logloss':eval(logloss,obj,'logloss'),
         'merror':eval(merror,obj,'merror'),
         'mlogloss':eval(mlogloss,obj,'mlogloss'),
-        'squarederror':eval(squarederror,obj,'squarederror')
+        'squarederror':eval(squarederror,obj,'squarederror'),
+        'rmse':eval(rmse,obj,'rmse')
     }
     print("Taking first argument of eval_metric. Multiple evals not supported using xgboost backend.")
     return output_dict[params['eval_metric'][0]]
 
 def get_objective(params):
     output_dict = {
-        'binary:logistic':xgb_objective(params['extra_dims'],params['num_class'],binarylogloss_gradient_hessian),
-        'reg:squarederror':xgb_objective(params['extra_dims'],params['num_class'],squareloss_gradient_hessian),
-        'multi:softmax':xgb_objective(params['extra_dims'],params['num_class'],categoricallogloss_gradient_hessian)
+        'binary:logistic':xgb_objective(params['btype'],params['extra_dims'],params['num_class'],binarylogloss_gradient_hessian),
+        'reg:squarederror':xgb_objective(params['btype'],params['extra_dims'],params['num_class'],squareloss_gradient_hessian),
+        'multi:softmax':xgb_objective(params['btype'],params['extra_dims'],params['num_class'],categoricallogloss_gradient_hessian)
         }
     return output_dict[params['objective']]
 
 
 class xgb_objective():
-    def __init__(self,wide_dim,output_dim,obj):
+    def __init__(self,btype,wide_dim,output_dim,obj):
         ## accepted values for obj are the functions
         ## associated with 
         ## "binary:logistic"
@@ -175,8 +187,9 @@ class xgb_objective():
         self.obj = obj
 
         #B = np.concatenate([np.eye(10),np.random.random([oodim,10])],axis=0)
-        self.B = np.concatenate([np.eye(self.output_dim),
-        np.random.random([self.wide_dim,self.output_dim])],axis=0)
+        #self.B = np.concatenate([np.eye(self.output_dim),
+        #np.random.random([self.wide_dim,self.output_dim])],axis=0)
+        self.B = initialize_B(btype,self.output_dim+self.wide_dim,self.output_dim)
 
     def __call__(self,preds,dtrain):
         Xhere = preds.reshape([preds.shape[0],-1])
