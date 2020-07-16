@@ -1,5 +1,5 @@
 # wideboost
-Wrappers to implement wide boosting using popular boosting frameworks
+Implements wide boosting using popular boosting frameworks as a backend.
 
 ## Getting started
 
