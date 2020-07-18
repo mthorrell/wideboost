@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mthorrell/wideboost",
-    packages=setuptools.find_packages('wideboost'),
+    packages=setuptools.find_packages(),
     install_requires=['numpy','xgboost'],
     classifiers=[
         "Programming Language :: Python :: 3",
