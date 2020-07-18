@@ -23,7 +23,7 @@ param = {'btype':'I','extra_dims':2,'max_depth':2, 'eta':0.1, 'objective':'binar
 num_round = 50
 watchlist = [(dtrain,'train'),(dtest,'test')]
 wxgb_results = dict()
-bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=xgb_results)
+bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=wxgb_results)
 ```
 
 ## Parameter Explanations
