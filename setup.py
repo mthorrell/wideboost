@@ -4,15 +4,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="wideboost", # Replace with your own username
+    name="wideboost", 
     version="0.0.1",
     author="Michael Horrell",
     author_email="mthorrell@github.com",
     description="Implements Wide Boosting functions for popular boosting packages",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="",
-    packages=setuptools.find_packages(),
+    url="https://github.com/mthorrell/wideboost",
+    packages=setuptools.find_packages('wideboost'),
+    install_requires=['numpy','xgboost'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
