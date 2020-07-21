@@ -14,13 +14,39 @@ pip install wideboost
 ```
 import xgboost as xgb
 from wideboost.wrappers import wxgb
+from pydataset import data
+import numpy as np
 
-dtrain = xgb.DMatrix('../../xgboost/demo/data/agaricus.txt.train')
-dtest = xgb.DMatrix('../../xgboost/demo/data/agaricus.txt.test')
+########
+## Get and format the data
+DAT = np.asarray(data('Yogurt'))
+X = DAT[:,0:9]
+Y = np.zeros([X.shape[0],1])
+Y[DAT[:,9] == 'dannon'] = 1
+Y[DAT[:,9] == 'hiland'] = 2
+Y[DAT[:,9] == 'weight'] = 3
 
-# Two extra parameters, 'btype' and 'extra_dims'
-param = {'btype':'I','extra_dims':2,'max_depth':2, 'eta':0.1, 'objective':'binary:logistic','eval_metric':['error'] }
-num_round = 50
+n = X.shape[0]
+np.random.seed(123)
+train_idx = np.random.choice(np.arange(n),round(n*0.5),replace=False)
+test_idx = np.setdiff1d(np.arange(n),train_idx)
+
+dtrain = xgb.DMatrix(X[train_idx,:],label=Y[train_idx,:])
+dtest = xgb.DMatrix(X[test_idx,:],label=Y[test_idx,:])
+#########
+
+#########
+## Set parameters and run wide boosting
+
+param = {'btype':'I',      ## wideboost param -- one of 'I', 'In', 'R', 'Rn'
+         'extra_dims':10,  ## wideboost param -- integer >= 0
+         'max_depth':8,
+         'eta':0.1,
+         'objective':'multi:softmax',
+         'num_class':4,
+         'eval_metric':['merror'] }
+
+num_round = 100
 watchlist = [(dtrain,'train'),(dtest,'test')]
 wxgb_results = dict()
 bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=wxgb_results)
