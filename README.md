@@ -33,4 +33,4 @@ bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=wxgb_results)
 
 ## Reference
 
-Coming Soon!
+https://arxiv.org/pdf/2007.09855.pdf
