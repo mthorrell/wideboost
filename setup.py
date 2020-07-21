@@ -14,6 +14,9 @@ setuptools.setup(
     url="https://github.com/mthorrell/wideboost",
     packages=setuptools.find_packages(),
     install_requires=['numpy','xgboost'],
+    extras_require={
+              'scikit-learn': ['scikit-learn']
+          },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
