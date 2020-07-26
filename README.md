@@ -7,7 +7,7 @@ Implements wide boosting using popular boosting frameworks as a backend.
 pip install wideboost
 ```
 
-## Sample script
+## Sample scripts
 
 ### XGBoost back-end
 
@@ -51,7 +51,7 @@ watchlist = [(dtrain,'train'),(dtest,'test')]
 wxgb_results = dict()
 bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=wxgb_results)
 ```
-## LightGBM back-end
+### LightGBM back-end
 
 ```
 import lightgbm as lgb
