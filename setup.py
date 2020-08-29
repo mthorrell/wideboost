@@ -15,7 +15,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=['numpy','xgboost'],
     extras_require={
-              'scikit-learn': ['scikit-learn']
+              'scikit-learn': ['scikit-learn'],
+              'lightgbm': ['lightgbm'],
+              'shap': ['shap']
           },
     classifiers=[
         "Programming Language :: Python :: 3",
