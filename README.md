@@ -92,6 +92,21 @@ wlgb_results = dict()
 bst = wlgb.train(param, train_data, valid_sets=test_data, num_boost_round=100, evals_result=wlgb_results)
 ```
 
+## Explainers
+
+As a way to interpret wideboost models, we connect to basic functionality from [SHAP](https://github.com/slundberg/shap). Example here:
+```
+from wideboost.explainers.shap import WTreeExplainer
+import shap
+
+explainer = WTreeExplainer(bst)
+shap_values = explainer.shap_values(data('Yogurt').iloc[0:1,0:9])
+
+shap.initjs()
+print(bst.predict(xgb.DMatrix(np.asarray(data('Yogurt'))[0:1,0:9])))
+shap.force_plot(explainer.expected_value[3],shap_values[3][0,:],data('Yogurt').iloc[0,0:9])
+```
+![wideboost-shap](/.github/wideboost-shap.png)
 
 ## Parameter Explanations
 `'btype'` indicates how to initialize the beta matrix. Settings are `'I'`, `'In'`, `'R'`, `'Rn'`.

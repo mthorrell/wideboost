@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wideboost", 
-    version="0.2.0",
+    version="0.3.0",
     author="Michael Horrell",
     author_email="mthorrell@github.com",
     description="Implements Wide Boosting functions for popular boosting packages",
@@ -15,7 +15,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=['numpy','xgboost'],
     extras_require={
-              'scikit-learn': ['scikit-learn']
+              'scikit-learn': ['scikit-learn'],
+              'lightgbm': ['lightgbm'],
+              'shap': ['shap']
           },
     classifiers=[
         "Programming Language :: Python :: 3",
