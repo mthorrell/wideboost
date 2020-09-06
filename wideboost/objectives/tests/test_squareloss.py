@@ -15,7 +15,21 @@ def test_basic_value():
 
     assert gmatches and hmatches
 
+# eventually deprecated
+def test_old_v_new():
+    np.random.seed(123)
+    X = np.random.random([100,10])
+    B = np.random.random([10,5])
+    Y = np.random.random([100,5])
 
+    g,h = squareloss.squareloss_gradient_hessian(X,B,Y)
+    go,ho = squareloss.squareloss_gradient_hessian_old(X,B,Y)
+
+    eps = 1e-8
+    gmatches = np.max(np.abs(g - go)) < eps
+    hmatches = np.max(np.abs(h - ho)) < eps
+
+    assert gmatches and hmatches
 
 
 
