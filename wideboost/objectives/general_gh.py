@@ -14,6 +14,16 @@ def f_hessian_B(hessian,B):
     # You need the row-wise full hessian. This is why that dimension needs to be 3.
     return np.diagonal(np.matmul(np.matmul(hessian,B.T).transpose([0,2,1]),B.T),axis1=1,axis2=2)
 
+# Helper function for those wanting to use f_hessian_B. Takes a 2D matrix and converts 
+# to 3D by making diagonal matrices per row with the diagnoal values equal to the values
+# in each row.
+def row_diag(M):
+    b = np.zeros((M.shape[0], M.shape[1], M.shape[1]))
+    diag = np.arange(M.shape[1])
+    b[:, diag, diag] = M
+    return b
+
+
 # from wideboost.objectives.squareloss import squareloss_gradient_hessian as sgh
 # from wideboost.objectives.categoricallogloss import categoricallogloss_gradient_hessian as cgh
 # import numpy as np
