@@ -22,7 +22,7 @@ def test_old_v_new():
     np.random.seed(456)
     X = np.random.random([100,10])
     B = np.random.random([10,5])
-    Y = np.random.random([100,5])
+    Y = np.random.choice(np.arange(5),[100,1])
 
     g,h = categoricallogloss.categoricallogloss_gradient_hessian(X,B,Y)
     go,ho = categoricallogloss.categoricallogloss_gradient_hessian_old(X,B,Y)
