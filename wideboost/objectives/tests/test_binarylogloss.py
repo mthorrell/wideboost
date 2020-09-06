@@ -20,7 +20,7 @@ def test_basic_value():
 def test_old_v_new():
     np.random.seed(789)
     X = np.random.random([100,10])
-    B = np.random.random([10,5])
+    B = np.random.random([10,1])
     Y = np.random.choice([0,1],[100,1])
 
     g,h = binarylogloss.binarylogloss_gradient_hessian(X,B,Y)

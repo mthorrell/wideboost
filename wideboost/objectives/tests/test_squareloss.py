@@ -19,8 +19,8 @@ def test_basic_value():
 def test_old_v_new():
     np.random.seed(123)
     X = np.random.random([100,10])
-    B = np.random.random([10,5])
-    Y = np.random.random([100,5])
+    B = np.random.random([10,1])
+    Y = np.random.random([100,1])
 
     g,h = squareloss.squareloss_gradient_hessian(X,B,Y)
     go,ho = squareloss.squareloss_gradient_hessian_old(X,B,Y)
