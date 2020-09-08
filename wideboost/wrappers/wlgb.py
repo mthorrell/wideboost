@@ -1,6 +1,6 @@
 import numpy as np
 import lightgbm as lgb 
-from ..objectives.squareloss import squareloss_gradient_hessian
+from ..objectives.squareloss import squareloss_gradient_hessian, multi_squareloss_gradient_hessian
 from ..objectives.categoricallogloss import categoricallogloss_gradient_hessian
 from ..objectives.binarylogloss import binarylogloss_gradient_hessian
 from ..evals.classification import error, logloss, merror, mlogloss
@@ -99,8 +99,9 @@ def get_objective(params):
     # TODO use all lgb names (objective can be specified by other names)
     output_dict = {
         'binary':lgb_objective(params['btype'],params['extra_dims'],params['num_class'],binarylogloss_gradient_hessian),
+        'multiclass':lgb_objective(params['btype'],params['extra_dims'],params['num_class'],categoricallogloss_gradient_hessian),
         'regression':lgb_objective(params['btype'],params['extra_dims'],params['num_class'],squareloss_gradient_hessian),
-        'multiclass':lgb_objective(params['btype'],params['extra_dims'],params['num_class'],categoricallogloss_gradient_hessian)
+        'multiregression':lgb_objective(params['btype'],params['extra_dims'],params['num_class'],multi_squareloss_gradient_hessian)
         }
     return output_dict[params['objective']]
 
