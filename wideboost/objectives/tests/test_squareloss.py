@@ -23,7 +23,7 @@ def test_old_v_new():
     Y = np.random.random([100,1])
 
     g,h = squareloss.squareloss_gradient_hessian(X,B,Y)
-    go,ho = squareloss.squareloss_gradient_hessian_old(X,B,Y)
+    go,ho = squareloss.squareloss_gradient_hessian_FULLHESSIAN(X,B,Y)
 
     eps = 1e-8
     gmatches = np.max(np.abs(g - go)) < eps

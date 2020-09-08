@@ -1,7 +1,7 @@
 import numpy as np 
 from .general_gh import f_gradient_B, f_hessian_B
 
-def binarylogloss_gradient_hessian(X,B,Y):
+def binarylogloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     Y = Y.reshape([Y.shape[0],-1])
 
     assert len(X.shape) == 2
@@ -21,7 +21,7 @@ def binarylogloss_gradient_hessian(X,B,Y):
     return dX, np.maximum(dX2,eps)
 
 
-def binarylogloss_gradient_hessian_old(X,B,Y):
+def binarylogloss_gradient_hessian(X,B,Y):
     # Loss = log(p) when Y == 1
     # Loss = log(1-p) when Y == 0
     # p = exp(XB)/(1 + exp(XB))

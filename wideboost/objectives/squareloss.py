@@ -1,7 +1,9 @@
 import numpy as np 
 from .general_gh import f_gradient_B, f_hessian_B, row_diag
 
-def squareloss_gradient_hessian(X,B,Y):
+# Using the general form will be less efficient than
+# the purpose-built function, squareloss_gradient_hessian
+def squareloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     # Loss = 1/2 (Y - X)^2
     Y = Y.reshape([Y.shape[0],-1])
 
@@ -40,7 +42,7 @@ def multi_squareloss_gradient_hessian(X,B,Y):
     return dX, dX2
 
 
-def squareloss_gradient_hessian_old(X,B,Y):
+def squareloss_gradient_hessian(X,B,Y):
     # Loss = 1/2 (Y - X)^2
 
     Y = Y.reshape([Y.shape[0],-1])

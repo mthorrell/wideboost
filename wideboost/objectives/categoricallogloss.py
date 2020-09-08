@@ -1,7 +1,9 @@
 import numpy as np
 from .general_gh import f_gradient_B, f_hessian_B, row_diag
 
-def categoricallogloss_gradient_hessian(X,B,Y):
+# Use the more general formula, but using the specific formula
+# in categoricallogloss_gradient_hessian gives better performance
+def categoricallogloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     Y = Y.reshape([Y.shape[0],-1])
     
     def _onehot(Y):
@@ -32,7 +34,7 @@ def categoricallogloss_gradient_hessian(X,B,Y):
     eps = 1e-16
     return dX, np.maximum(dX2,eps)
 
-def categoricallogloss_gradient_hessian_old(X,B,Y):
+def categoricallogloss_gradient_hessian(X,B,Y):
     Y = Y.reshape([Y.shape[0],-1])
     
     def _onehot(Y):
