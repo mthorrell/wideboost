@@ -25,7 +25,16 @@ def train(param, train_set, num_boost_round=100, valid_sets=None,
         feature_name='auto', categorical_feature='auto',
         early_stopping_rounds=None, evals_result=None, verbose_eval=True,
         learning_rates=None, keep_training_booster=False, callbacks=None):
-    
+    """train -- Trains a wideboost model using the lightGBM backend.
+
+    Args:
+        param (list): Named parameter list. Uses lightGBM conventions. Requires 
+            two parameters in addition to the usual lightGBM parameters,
+            'btype' and 'extra_dims'. 
+
+    Returns:
+        wlgb: A wlgb object containing the lightGBM object with objective and evaluation objects.
+    """
     params = param.copy()
     if not isinstance(fobj,lgb_objective):
         assert params['extra_dims'] >= 0
