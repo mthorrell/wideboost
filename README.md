@@ -113,6 +113,12 @@ shap.force_plot(explainer.expected_value[3],shap_values[3][0,:],data('Yogurt').i
 
 `'extra_dims'` integer indicating how many "wide" dimensions are used.  When `'extra_dims'` is set to `0` (and `'btype'` is set to `'I'`) then wide boosting is equivalent to standard gradient boosting.
 
+For more details see the documentation.
+
+## Documentation
+
+https://mthorrell.github.io/wideboost/
+
 ## Reference
 
 https://arxiv.org/pdf/2007.09855.pdf
