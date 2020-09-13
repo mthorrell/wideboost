@@ -1,4 +1,5 @@
 site_name: wideboost
+site_url: https://github.com/mthorrell/wideboost
 nav:
     - Home: index.md
     - Installation: installation.md
