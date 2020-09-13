@@ -33,7 +33,16 @@ class eval:
 def train(param,dtrain,num_boost_round=10,evals=(),obj=None,
           feval=None,maximize=False,early_stopping_rounds=None,evals_result=None,
           verbose_eval=True,xgb_model=None,callbacks=None):
-    
+    """train -- Trains a wideboost model using the XGBoost backend.
+
+    Args:
+        param (list): Named parameter list. Uses XGBoost conventions. Requires 
+            two parameters in addition to the usual XGBoost parameters,
+            'btype' and 'extra_dims'. 
+
+    Returns:
+        wxgb: A wxgb object containing the XGBoost object with objective and evaluation objects.
+    """
     params = param.copy()
     if not isinstance(obj,xgb_objective):
         assert params['extra_dims'] >= 0

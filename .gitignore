@@ -6,3 +6,4 @@ __pycache__
 examples/paper_examples/q_lt_d/
 examples/paper_examples/timing/
 examples/paper_examples/tree_count/
+site/

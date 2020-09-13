@@ -1,0 +1,23 @@
+site_name: wideboost
+nav:
+    - Home: index.md
+    - Installation: installation.md
+    - Overview: overview.md
+    - Examples: examples.md
+    - Wideboost-specific Parameters: wideboost_parameters.md
+    - Objective Functions: objectives.md
+    - XGBoost wrapper: wrapper_xgboost.md
+    - LightGBM wrapper: wrapper_lightgbm.md
+    - SHAP Explainer: shap_explainer.md
+
+theme:
+  name: "material"
+
+plugins:
+  - search
+  - mkdocstrings
+
+markdown_extensions:
+  - pymdownx.arithmatex
+extra_javascript:
+  - 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML'
