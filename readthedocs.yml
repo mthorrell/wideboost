@@ -8,8 +8,8 @@ mkdocs:
   configuration: mkdocs.yml
 
 python:
-  version: 3.7
-  install:
-    - method: pip
-    path: wideboost
-    - requirements: readthedocs-reqs.txt
+   version: 3.7
+   install:
+      - requirements: docs/requirements.txt
+      - method: pip
+        path: .
