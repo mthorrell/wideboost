@@ -1,6 +1,6 @@
 # Welcome to wideboost!
 
-`wideboost` implements Wide Boosting as described in this [article](https://arxiv.org/abs/2007.09855). `wideboost` does this by wrapping existing popular Gradient Boosting packages ([XGBoost](https://xgboost.readthedocs.io/) and [LightGBM](https://lightgbm.readthedocs.io/)). If you're familiar with those packages `wideboost` can essentially be used as a drop-in replacement for either XGBoost or LightGBM if you're using one of the `wideboost` supported objective functions.
+`wideboost` implements Wide Boosting as described in this [article](https://arxiv.org/abs/2007.09855). `wideboost` does this by wrapping existing popular Gradient Boosting packages ([XGBoost](https://xgboost.readthedocs.io/) and [LightGBM](https://lightgbm.readthedocs.io/)). If you're familiar with those packages `wideboost` can essentially be used as a drop-in replacement for either XGBoost or LightGBM when you're using one of the `wideboost` supported objective functions.
 
 Wide Boosting tweaks the usual Gradient Boosting framework as described in our [Overview](overview.md). It solves the same problems as Gradient Boosting. On several datasets is exhibits much better performance (see the [Overview](overview.md) or the [article](https://arxiv.org/abs/2007.09855)). Supported [objective functions](objectives.md) for `wideboost` include usual univariate and multivariate regression and binary and multi-category classification.
 
