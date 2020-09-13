@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/installation/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/overview/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/examples/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/wideboost_parameters/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/objectives/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/wrapper_xgboost/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/wrapper_lightgbm/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
-     <loc>None</loc>
+     <loc>https://github.com/mthorrell/wideboost/shap_explainer/</loc>
      <lastmod>2020-09-13</lastmod>
      <changefreq>daily</changefreq>
     </url>
