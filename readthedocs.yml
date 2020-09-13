@@ -10,6 +10,6 @@ mkdocs:
 python:
    version: 3.7
    install:
-      - requirements: docs/requirements.txt
+      - requirements: readthedocs-reqs.txt
       - method: pip
         path: .
