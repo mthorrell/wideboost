@@ -106,8 +106,10 @@ def get_eval_metric(params,obj):
         'squarederror':eval(squarederror,obj,'squarederror'),
         'rmse':eval(rmse,obj,'rmse')
     }
-    print("Taking first argument of eval_metric. Multiple evals not supported using xgboost backend.")
-    return output_dict[params['eval_metric'][0]]
+    if isinstance(params['eval_metric'], list):
+    	print("Taking first argument of eval_metric. Multiple evals not supported using xgboost backend.")
+    	return output_dict[params['eval_metric'][0]]
+    return output_dict[params['eval_metric']]
 
 def get_objective(params):
     output_dict = {
