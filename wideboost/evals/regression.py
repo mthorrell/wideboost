@@ -4,7 +4,7 @@ import numpy as np
 
 
 def squarederror(preds, dtrain, obj):
-    # TODO remove duplication (we're generating actual predictions multiple places)
+    # TODO remove duplication
     preds = preds.reshape([preds.shape[0], -1])
     y = _fix_y_dim(preds, dtrain.get_label())
     y = y.reshape([y.shape[0], -1])
