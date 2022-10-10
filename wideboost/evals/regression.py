@@ -1,5 +1,4 @@
 import numpy as np
-import xgboost as xgboost
 
 # TODO make these independent of xgb dtrain
 
@@ -7,7 +6,7 @@ import xgboost as xgboost
 def squarederror(preds, dtrain, obj):
     # TODO remove duplication (we're generating actual predictions multiple places)
     preds = preds.reshape([preds.shape[0], -1])
-    y = dtrain.get_label()
+    y = _fix_y_dim(preds, dtrain.get_label())
     y = y.reshape([y.shape[0], -1])
 
     P = preds.dot(obj.B)
@@ -21,9 +20,16 @@ def rmse(preds, dtrain, obj):
 
 def mae(preds, dtrain, obj):
     preds = preds.reshape([preds.shape[0], -1])
-    y = dtrain.get_label()
+    y = _fix_y_dim(preds, dtrain.get_label())
     y = y.reshape([y.shape[0], -1])
 
     P = preds.dot(obj.B)
 
     return np.mean(np.abs(y - P))
+
+
+def _fix_y_dim(x, y):
+    if y.shape[0] > x.shape[0]:
+        dim = int(y.shape[0] / x.shape[0])
+        y = y.reshape([x.shape[0], dim])
+    return y

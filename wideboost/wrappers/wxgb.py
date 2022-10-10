@@ -52,12 +52,20 @@ def train(param, dtrain, num_boost_round=10, evals=(), obj=None,
     else:
         print("Using custom objective. Removed extra_dims restriction.")
 
-    # Overwrite needed params
+    # Set and overwrite needed params
+    params['output_dim'] = (
+        1 if params.get('num_class') is None
+        else params['num_class']
+    )
+
+    # Hack to achieve same behavior specifically for categorical classification
     print("Overwriting param `num_class`")
-    try:
-        # TODO this is ugly
-        nclass = params["num_class"]
-    except:
+    if (
+        params['objective'] == 'multi:softmax'
+        and dtrain.num_row() == dtrain.get_label().shape[0]
+    ):
+        params['num_class'] = params['output_dim'] + params['extra_dims']
+    else:
         params['num_class'] = 1
 
     if isinstance(obj, xgb_objective):
@@ -66,16 +74,13 @@ def train(param, dtrain, num_boost_round=10, evals=(), obj=None,
     else:
         obj = get_objective(params)
 
-    params['num_class'] = params['num_class'] + params['extra_dims']
-    params.pop('extra_dims')
-
     print("Overwriting param `objective` while setting `obj` in train.")
     params['objective'] = 'reg:squarederror'
 
     try:
         feval = get_eval_metric(params, obj)
         params.pop('eval_metric')
-        print("Moving param `eval_metric` to an feval.")
+        print("Moving param `eval_metric` to a custom_metric.")
     except:
         None
 
@@ -86,8 +91,13 @@ def train(param, dtrain, num_boost_round=10, evals=(), obj=None,
     # TODO: Allow some items to be overwritten by user. This being one of them.
     params['base_score'] = 0.0
 
+    # remove the params not used by xgb to avoid extra prints
+    params.pop('btype')
+    params.pop('output_dim')
+    params.pop('extra_dims')
+
     xgbobject = xgb.train(params, dtrain, num_boost_round=num_boost_round, evals=evals, obj=obj,
-                          feval=feval, maximize=maximize, early_stopping_rounds=early_stopping_rounds,
+                          custom_metric=feval, maximize=maximize, early_stopping_rounds=early_stopping_rounds,
                           evals_result=evals_result, verbose_eval=verbose_eval, xgb_model=xgb_model,
                           callbacks=callbacks)
 
@@ -119,10 +129,10 @@ def get_eval_metric(params, obj):
 
 def get_objective(params):
     output_dict = {
-        'binary:logistic': xgb_objective(params['btype'], params['extra_dims'], params['num_class'], binarylogloss_gradient_hessian),
-        'reg:squarederror': xgb_objective(params['btype'], params['extra_dims'], params['num_class'], squareloss_gradient_hessian),
-        'multi:squarederror': xgb_objective(params['btype'], params['extra_dims'], params['num_class'], multi_squareloss_gradient_hessian),
-        'multi:softmax': xgb_objective(params['btype'], params['extra_dims'], params['num_class'], categoricallogloss_gradient_hessian)
+        'binary:logistic': xgb_objective(params['btype'], params['extra_dims'], params['output_dim'], binarylogloss_gradient_hessian),
+        'reg:squarederror': xgb_objective(params['btype'], params['extra_dims'], params['output_dim'], squareloss_gradient_hessian),
+        'multi:squarederror': xgb_objective(params['btype'], params['extra_dims'], params['output_dim'], multi_squareloss_gradient_hessian),
+        'multi:softmax': xgb_objective(params['btype'], params['extra_dims'], params['output_dim'], categoricallogloss_gradient_hessian)
     }
     return output_dict[params['objective']]
 
@@ -150,6 +160,10 @@ class xgb_objective():
     def __call__(self, preds, dtrain):
         Xhere = preds.reshape([preds.shape[0], -1])
         Yhere = dtrain.get_label()
+
+        if Yhere.shape[0] > Xhere.shape[0]:
+            dim = int(Yhere.shape[0] / Xhere.shape[0])
+            Yhere = Yhere.reshape([Xhere.shape[0], dim])
 
         M = Xhere.shape[0]
         N = Xhere.shape[1]

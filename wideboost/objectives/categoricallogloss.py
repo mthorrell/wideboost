@@ -5,12 +5,9 @@ from .general_gh import f_gradient_B, f_hessian_B, row_diag
 # in categoricallogloss_gradient_hessian gives better performance
 def categoricallogloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     Y = Y.reshape([Y.shape[0],-1])
-    
-    def _onehot(Y):
-        b = np.zeros((Y.shape[0], Y.max().astype(int)+1))
-        b[np.arange(Y.shape[0]),Y.astype(int).flatten()] = 1
-        return b
-    
+    if Y.shape[1] == 1:
+        Y = _onehot(Y)
+
     assert len(X.shape) == 2
     assert len(B.shape) == 2
     assert len(Y.shape) == 2
@@ -22,7 +19,7 @@ def categoricallogloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     sum_exp = np.sum(np.exp(logits),axis=1,keepdims=True)
     P = np.exp(logits) / sum_exp
     
-    G = P - _onehot(Y)
+    G = P - Y
     H = row_diag(P) - np.matmul(
         P.reshape([-1,P.shape[1],1]),
         P.reshape([-1,1,P.shape[1]])
@@ -35,12 +32,9 @@ def categoricallogloss_gradient_hessian_FULLHESSIAN(X,B,Y):
     return dX, np.maximum(dX2,eps)
 
 def categoricallogloss_gradient_hessian(X,B,Y):
-    Y = Y.reshape([Y.shape[0],-1])
-    
-    def _onehot(Y):
-        b = np.zeros((Y.shape[0], Y.max().astype(int)+1))
-        b[np.arange(Y.shape[0]),Y.astype(int).flatten()] = 1
-        return b
+    Y = Y.reshape([Y.shape[0], -1])
+    if Y.shape[1] == 1:
+        Y = _onehot(Y)
     
     assert len(X.shape) == 2
     assert len(B.shape) == 2
@@ -54,7 +48,13 @@ def categoricallogloss_gradient_hessian(X,B,Y):
     P = np.exp(logits) / sum_exp
     
     eps = 1e-16
-    dX = (P - _onehot(Y)).dot(B.transpose())
+    dX = (P - Y).dot(B.transpose())
     dX2 = np.maximum(P.dot(np.square(B).transpose()) - np.square(P.dot(B.transpose())),eps)
     
     return dX, dX2
+
+
+def _onehot(Y):
+    b = np.zeros((Y.shape[0], Y.max().astype(int)+1))
+    b[np.arange(Y.shape[0]),Y.astype(int).flatten()] = 1
+    return b
