@@ -4,9 +4,11 @@ from sklearn.base import BaseEstimator
 from .wxgb import train
 
 # Thinnest possible wrapper for sklearn capabilities
+
+
 class wxgbModel(BaseEstimator):
-    def __init__(self,extra_dims=0,btype='I',max_depth=None, eta=0.1, n_estimators=10,
-                 verbosity=None, objective=None, booster=None,num_class=None,
+    def __init__(self, extra_dims=0, btype='I', max_depth=None, eta=0.1, n_estimators=10,
+                 verbosity=None, objective=None, booster=None, num_class=None,
                  tree_method=None, n_jobs=None, gamma=None,
                  min_child_weight=None, max_delta_step=None, subsample=None,
                  colsample_bytree=None, colsample_bylevel=None,
@@ -14,8 +16,8 @@ class wxgbModel(BaseEstimator):
                  scale_pos_weight=None, base_score=None, random_state=None,
                  missing=np.nan, num_parallel_tree=None,
                  monotone_constraints=None, interaction_constraints=None,
-                 importance_type="gain", gpu_id=None,eval_metric="error",
-                 validate_parameters=None,**kwargs):
+                 importance_type="gain", gpu_id=None, eval_metric="error",
+                 validate_parameters=None, **kwargs):
         self.extra_dims = extra_dims
         self.num_class = num_class
         self.btype = btype
@@ -52,15 +54,14 @@ class wxgbModel(BaseEstimator):
     def fit(self, X, y):
         dtrain = xgb.DMatrix(data=X, label=y)
         params = self.__dict__.copy()
-        self.wxgbObject = train(params,dtrain)
+        self.wxgbObject = train(params, dtrain)
         return self
 
-    def predict(self,X):
+    def predict(self, X):
         dtest = xgb.DMatrix(X)
         return self.wxgbObject.predict(dtest)
 
-    def score(self,X,y=None):
-        dtest = xgb.DMatrix(data=X,label=y)
+    def score(self, X, y=None):
+        dtest = xgb.DMatrix(data=X, label=y)
         preds = self.wxgbObject.xgbobject.predict(dtest)
-        return self.wxgbObject.feval(preds,dtest)[1]
-
+        return self.wxgbObject.feval(preds, dtest)[1]
