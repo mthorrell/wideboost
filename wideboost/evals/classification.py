@@ -71,7 +71,7 @@ def mlogloss(preds, dtrain, obj):
 
 
 def many_logloss(preds, dtrain, obj, Y2D):
-    validY = [
+    validY = [  # awful hack
         Y2D[k] for k in Y2D.keys()
         if Y2D[k].shape[0] == dtrain.get_label().shape[0]
     ][0]
@@ -83,7 +83,7 @@ def many_logloss(preds, dtrain, obj, Y2D):
 
 
 def many_auc(preds, dtrain, obj, Y2D):
-    validY = [
+    validY = [  # awful hack
         Y2D[k] for k in Y2D.keys()
         if Y2D[k].shape[0] == dtrain.get_label().shape[0]
     ][0]

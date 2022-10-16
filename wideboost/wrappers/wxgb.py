@@ -2,6 +2,7 @@ import numpy as np
 from scipy.linalg import lstsq
 import xgboost as xgb
 
+from ..helpers import onehot
 from ..objectives.squareloss import (
     squareloss_gradient_hessian,
     multi_squareloss_gradient_hessian
@@ -51,10 +52,11 @@ class eval:
 
 
 def train(
-    param, dtrain, num_boost_round=10, evals=(), obj=None,
+    X_train, Y_train,
+    param, num_boost_round=10, evals=(), obj=None,
     feval=None, maximize=False, early_stopping_rounds=None, evals_result=None,
     verbose_eval=True, xgb_model=None, callbacks=None,
-    Y_train=None, Y_eval=None
+    Y_eval=None  # are these absolutely necessarry???
 ):
     """train -- Trains a wideboost model using the XGBoost backend.
 
@@ -68,42 +70,49 @@ def train(
             evaluation objects.
     """
     params = param.copy()
-    if not isinstance(obj, xgb_objective):
-        1
-        # assert params['extra_dims'] >= 0
-    else:
-        print("Using custom objective. Removed extra_dims restriction.")
 
     # Overwrite/set needed params
-    if not ('num_class' in params):
-        params['num_class'] = 1
-
-    if isinstance(obj, xgb_objective):
-        print(
-            "Found custom wideboost-compatible objective. "
-            "Using user specified objective."
-        )
+    if not params['objective'] == 'multi:softmax':
+        assert params.get('num_class') is None or params['num_class'] == 1
+        n_trees_per_round = params['output_dim'] + params['extra_dims']
     else:
-        if not params.get('beta_eta'):
-            params['beta_eta'] = None
-        obj = get_objective(params, Y_train)
+        if params.get('num_class'):
+            assert params.get('output_dim') is None
+            assert Y_train.shape[0] == X_train.shape[0]
+            n_trees_per_round = params.get('num_class')
+            Y_train = onehot(Y_train)
+        if params.get('output_dim'):
+            assert params.get('num_class') is None
+            n_trees_per_round = params.get('output_dim')
 
-    params['num_class'] = params['num_class'] + params['extra_dims']
-    params.pop('extra_dims')
+    # trick xgb into fitting more trees for us
+    dtrain = xgb.DMatrix(
+        X_train,
+        label=np.zeros(X_train.shape[0] * n_trees_per_round)
+    )
 
-    print("Overwriting param `objective` while setting `obj` in train.")
+    if not params.get('beta_eta'):
+        params['beta_eta'] = None
+    obj = get_objective(params, Y_train)
+
     params['objective'] = 'reg:squarederror'
 
     if 'eval_metric' in params:
         feval = get_eval_metric(params, obj, Y_eval)
-        params.pop('evail_metric')
+        params.pop('eval_metric')
 
-    print("Setting param `disable_default_eval_metric` to 1.")
     params['disable_default_eval_metric'] = 1
 
     # TODO: base_score should be set depending on the objective chosen
-    # TODO: Allow some items to be overwritten by user. This being one of them.
+    # TODO: Allow some items to be overwritten by user, this being one of them.
     params['base_score'] = 0.0
+
+    params.pop('extra_dims')
+    params.pop('output_dim')
+    if params.get('beta_eta'):
+        params.pop('beta_eta')
+    if params.get('btype'):
+        params.pop('btype')
 
     xgbobject = xgb.train(
         params, dtrain, num_boost_round=num_boost_round,
@@ -150,23 +159,23 @@ def get_eval_metric(params, obj, Y2D=None):
 def get_objective(params, Y=None):
     output_dict = {
         'binary:logistic': xgb_objective(
-            params['btype'], params['extra_dims'], params['num_class'],
+            params['btype'], params['extra_dims'], params['output_dim'],
             binarylogloss_gradient_hessian, params['beta_eta'], Y
         ),
         'reg:squarederror': xgb_objective(
-            params['btype'], params['extra_dims'], params['num_class'],
-            squareloss_gradient_hessian
+            params['btype'], params['extra_dims'], params['output_dim'],
+            squareloss_gradient_hessian, params['beta_eta'], Y
         ),
         'multi:squarederror': xgb_objective(
-            params['btype'], params['extra_dims'], params['num_class'],
-            multi_squareloss_gradient_hessian
+            params['btype'], params['extra_dims'], params['output_dim'],
+            multi_squareloss_gradient_hessian, params['beta_eta'], Y
         ),
         'multi:softmax': xgb_objective(
-            params['btype'], params['extra_dims'], params['num_class'],
-            categoricallogloss_gradient_hessian
+            params['btype'], params['extra_dims'], params['output_dim'],
+            categoricallogloss_gradient_hessian, params['beta_eta'], Y
         ),
         'manybinary:logistic':  xgb_objective(
-            params['btype'], params['extra_dims'], params['num_class'],
+            params['btype'], params['extra_dims'], params['output_dim'],
             manybinarylogloss_all_calcs,
             params['beta_eta'],
             Y
