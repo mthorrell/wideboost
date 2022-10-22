@@ -36,7 +36,7 @@ class wxgb:
         return output
 
 
-class eval:
+class pred_eval:
     def __init__(self, feval, obj, name, Y2D=None):
         self.feval = feval
         self.obj = obj
@@ -143,15 +143,15 @@ def predict(dtrain, xgbobject, obj):
 
 def get_eval_metric(params, obj, Y2D=None):
     output_dict = {
-        'error': eval(error, obj, 'error'),
-        'logloss': eval(logloss, obj, 'logloss'),
-        'merror': eval(merror, obj, 'merror'),
-        'mlogloss': eval(mlogloss, obj, 'mlogloss'),
-        'squarederror': eval(squarederror, obj, 'squarederror'),
-        'rmse': eval(rmse, obj, 'rmse'),
-        'mae': eval(mae, obj, 'mae'),
-        'many_logloss': eval(many_logloss, obj, 'many_logloss', Y2D),
-        'many_auc': eval(many_auc, obj, 'many_auc', Y2D),
+        'error': pred_eval(error, obj, 'error'),
+        'logloss': pred_eval(logloss, obj, 'logloss'),
+        'merror': pred_eval(merror, obj, 'merror'),
+        'mlogloss': pred_eval(mlogloss, obj, 'mlogloss'),
+        'squarederror': pred_eval(squarederror, obj, 'squarederror'),
+        'rmse': pred_eval(rmse, obj, 'rmse'),
+        'mae': pred_eval(mae, obj, 'mae'),
+        'many_logloss': pred_eval(many_logloss, obj, 'many_logloss', Y2D),
+        'many_auc': pred_eval(many_auc, obj, 'many_auc', Y2D),
     }
     if (
         isinstance(params['eval_metric'], list)
