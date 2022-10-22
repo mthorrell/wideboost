@@ -51,17 +51,22 @@ class eval:
         return self.name, loss
 
 
-def train(
+def fit(
     X_train, Y_train,
     param, num_boost_round=10, evals=(), obj=None,
-    feval=None, maximize=False, early_stopping_rounds=None, evals_result=None,
+    custom_metric=None, maximize=False, early_stopping_rounds=None, evals_result=None,
     verbose_eval=True, xgb_model=None, callbacks=None,
-    Y_eval=None  # are these absolutely necessarry???
 ):
-    """train -- Trains a wideboost model using the XGBoost backend.
+    """fit -- Trains a wideboost model using the XGBoost backend. Due to some
+    particulars of `xgb.train`, this function cannot accept a DMatrix but must 
+    receive the X and Y components separately.
 
     Args:
-        param (list): Named parameter list. Uses XGBoost conventions. Requires
+        X_train (np.array): X input. 2D.
+        Y_train (np.array): Y input. 2D.
+        evals (list): List of evaluation datasets. NEEDS to be formatted as
+            [((X, Y), 'name'), ...]
+        param (dict): Named parameter list. Uses XGBoost conventions. Requires
             two parameters in addition to the usual XGBoost parameters,
             'btype' and 'extra_dims'.
 
@@ -90,6 +95,8 @@ def train(
         X_train,
         label=np.zeros(X_train.shape[0] * n_trees_per_round)
     )
+    if not (evals is None):
+        xgb_evals = _to_xgb_evals(evals, n_trees_per_round)
 
     if not params.get('beta_eta'):
         params['beta_eta'] = None
@@ -98,31 +105,33 @@ def train(
     params['objective'] = 'reg:squarederror'
 
     if 'eval_metric' in params:
-        feval = get_eval_metric(params, obj, Y_eval)
+        custom_metric = get_eval_metric(
+            params,
+            obj,
+            {eval[1]: eval[0][1] for eval in evals}
+        )
         params.pop('eval_metric')
 
     params['disable_default_eval_metric'] = 1
 
     # TODO: base_score should be set depending on the objective chosen
-    # TODO: Allow some items to be overwritten by user, this being one of them.
-    params['base_score'] = 0.0
+    if not params.get('base_score'):
+        params['base_score'] = 0.0
 
     params.pop('extra_dims')
     params.pop('output_dim')
-    if params.get('beta_eta'):
-        params.pop('beta_eta')
-    if params.get('btype'):
-        params.pop('btype')
+    params.pop('btype')
+    params.pop('beta_eta', None)
 
     xgbobject = xgb.train(
         params, dtrain, num_boost_round=num_boost_round,
-        evals=evals, obj=obj, feval=feval, maximize=maximize,
+        evals=xgb_evals, obj=obj, custom_metric=custom_metric, maximize=maximize,
         early_stopping_rounds=early_stopping_rounds,
         evals_result=evals_result, verbose_eval=verbose_eval,
         xgb_model=xgb_model, callbacks=callbacks
     )
 
-    return wxgb(xgbobject, obj, feval)
+    return wxgb(xgbobject, obj, custom_metric)
 
 
 def predict(dtrain, xgbobject, obj):
@@ -148,10 +157,6 @@ def get_eval_metric(params, obj, Y2D=None):
         isinstance(params['eval_metric'], list)
         or isinstance(params['eval_metric'], tuple)
     ):
-        print(
-            "Taking first argument of eval_metric. "
-            "Multiple evals not supported using xgboost backend."
-        )
         return output_dict[params['eval_metric'][0]]
     return output_dict[params['eval_metric']]
 
@@ -240,3 +245,15 @@ def update_beta(X, B, G, H, eta):
     Y = - G / np.maximum(H, 0.0001)
     newB = lstsq(X, Y)[0]
     return B + eta * newB
+
+
+def _to_xgb_evals(evals, n_trees_per_round):
+    return [
+        (
+            xgb.DMatrix(
+                dataset[0][0],
+                label=np.zeros(dataset[0][0].shape[0] * n_trees_per_round)
+            ), dataset[1]
+        )
+        for dataset in evals
+    ]
