@@ -77,18 +77,18 @@ def fit(
     params = param.copy()
 
     # Overwrite/set needed params
-    if not params['objective'] == 'multi:softmax':
-        assert params.get('num_class') is None or params['num_class'] == 1
-        n_trees_per_round = params['output_dim'] + params['extra_dims']
-    else:
+    if params['objective'] == 'multi:softmax':
         if params.get('num_class'):
             assert params.get('output_dim') is None
             assert Y_train.shape[0] == X_train.shape[0]
-            n_trees_per_round = params.get('num_class')
+            assert len(Y_train.shape) == 1 or Y_train.shape[1] == 1
+            params['output_dim'] = params['num_class']
+            params['num_class'] = None
             Y_train = onehot(Y_train)
-        if params.get('output_dim'):
-            assert params.get('num_class') is None
-            n_trees_per_round = params.get('output_dim')
+
+    assert params.get('num_class') is None or params['num_class'] == 1
+    assert params['output_dim'] == Y_train.shape[1]
+    n_trees_per_round = params.get('output_dim') + params['extra_dims']
 
     # trick xgb into fitting more trees for us
     dtrain = xgb.DMatrix(
@@ -143,13 +143,13 @@ def predict(dtrain, xgbobject, obj):
 
 def get_eval_metric(params, obj, Y2D=None):
     output_dict = {
-        'error': pred_eval(error, obj, 'error'),
-        'logloss': pred_eval(logloss, obj, 'logloss'),
-        'merror': pred_eval(merror, obj, 'merror'),
-        'mlogloss': pred_eval(mlogloss, obj, 'mlogloss'),
-        'squarederror': pred_eval(squarederror, obj, 'squarederror'),
-        'rmse': pred_eval(rmse, obj, 'rmse'),
-        'mae': pred_eval(mae, obj, 'mae'),
+        'error': pred_eval(error, obj, 'error', Y2D),
+        'logloss': pred_eval(logloss, obj, 'logloss', Y2D),
+        'merror': pred_eval(merror, obj, 'merror', Y2D),
+        'mlogloss': pred_eval(mlogloss, obj, 'mlogloss', Y2D),
+        'squarederror': pred_eval(squarederror, obj, 'squarederror', Y2D),
+        'rmse': pred_eval(rmse, obj, 'rmse', Y2D),
+        'mae': pred_eval(mae, obj, 'mae', Y2D),
         'many_logloss': pred_eval(many_logloss, obj, 'many_logloss', Y2D),
         'many_auc': pred_eval(many_auc, obj, 'many_auc', Y2D),
     }

@@ -25,4 +25,4 @@ def manybinarylogloss_all_calcs(X, B, Y):
 
 def manybinarylogloss_gradient_hessian_FULLHESSIAN(X, B, Y):
     dX, d2X, dP, d2P = manybinarylogloss_all_calcs(X, B, Y)
-    return dX, d2X
+    return dX, d2X, dP, d2P

@@ -22,7 +22,7 @@ def squareloss_gradient_hessian_FULLHESSIAN(X, B, Y):
     dX = f_gradient_B(G, B)
     dX2 = f_hessian_B(H, B)
 
-    return dX, dX2
+    return dX, dX2, G, np.ones([Y.shape[0], 1])
 
 
 def multi_squareloss_gradient_hessian(X, B, Y):
@@ -59,4 +59,4 @@ def squareloss_gradient_hessian(X, B, Y):
     dX = -R * B.transpose()
     dX2 = np.ones(Y.shape) * np.square(B).transpose()
 
-    return dX, dX2
+    return dX, dX2, -R, np.ones([Y.shape[0], Y.shape[1]])
