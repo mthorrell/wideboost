@@ -65,3 +65,5 @@ bst = wxgb.fit(xtrain, ytrain, param, num_round, watchlist, evals_result=wxgb_re
 ## Reference
 
 https://arxiv.org/pdf/2007.09855.pdf
+
+Analyses included in the paper are in the examples/paper_examples/ folder.
