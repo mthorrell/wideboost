@@ -76,6 +76,13 @@ def fit(
     """
     params = param.copy()
 
+    if len(evals) > 1:
+        # TODO remove this horrible hack asap
+        row_counts = [eval_set[0][0].shape[0] for eval_set in evals]
+        assert len(row_counts) == len(set(row_counts)), (
+            'evals currently does not work when eval sets have same row counts'
+        )
+
     # Overwrite/set needed params
     if params['objective'] == 'multi:softmax':
         if params.get('num_class'):
