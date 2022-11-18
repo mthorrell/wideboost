@@ -62,6 +62,16 @@ bst = wxgb.fit(xtrain, ytrain, param, num_round, watchlist, evals_result=wxgb_re
 - `'output_dim'` width of Y. All Y need to be in 2D matrix format and onehotted if doing categorical prediction.
 - `'extra_dims'` integer indicating how many "wide" dimensions are used. When `'extra_dims'` is set to `0` (and `'btype'` is set to `'I'` and `'beta_eta' ` is `0`) then wide boosting is equivalent to standard gradient boosting.
 
+## New Objectives
+
+- `'multi:squarederror'` multidimension output regression.
+- `'manybinary:logistic'` loss is independent logloss average across response columns
+
+## New Evals
+
+- `'many_logloss'` logloss averaged across response columns
+- `'many_auc'` auc averaged across response columns
+
 ## Reference
 
 https://arxiv.org/pdf/2007.09855.pdf
