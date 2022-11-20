@@ -1,5 +1,6 @@
 # wideboost
-Implements wide boosting using popular boosting frameworks as a backend.
+
+Implements wide boosting using popular boosting frameworks as a backend. XGBoost supports the most wideboost features currently. Previous versions supported LightGBM, but this has since been deprecated.
 
 ## Getting started
 
@@ -9,9 +10,11 @@ pip install wideboost
 
 ## Sample scripts
 
-### XGBoost back-end
+The examples folder contains sample scripts for regression, binary classification, multivariate classification and multioutput binary classification. Currently xgboost is the only supported backend.
 
-```
+### Starter script
+
+```python
 import xgboost as xgb
 from wideboost.wrappers import wxgb
 from pydataset import data
@@ -25,100 +28,52 @@ Y = np.zeros([X.shape[0],1])
 Y[DAT[:,9] == 'dannon'] = 1
 Y[DAT[:,9] == 'hiland'] = 2
 Y[DAT[:,9] == 'weight'] = 3
+Y = wxgb.onehot(Y)
 
 n = X.shape[0]
 np.random.seed(123)
-train_idx = np.random.choice(np.arange(n),round(n*0.5),replace=False)
+train_idx = np.random.choice(np.arange(n),round(n*0.4),replace=False)
 test_idx = np.setdiff1d(np.arange(n),train_idx)
 
-dtrain = xgb.DMatrix(X[train_idx,:],label=Y[train_idx,:])
-dtest = xgb.DMatrix(X[test_idx,:],label=Y[test_idx,:])
-#########
+xtrain, ytrain = X[train_idx,:], Y[train_idx,]
+xtest, ytest = X[test_idx,:],Y[test_idx,]
+########
 
-#########
-## Set parameters and run wide boosting
-
-param = {'btype':'I',      ## wideboost param -- one of 'I', 'In', 'R', 'Rn'
-         'extra_dims':10,  ## wideboost param -- integer >= 0
-         'max_depth':8,
-         'eta':0.1,
-         'objective':'multi:softmax',
-         'num_class':4,
-         'eval_metric':['merror'] }
+param = {
+    'eta':0.1,
+    'btype':'I',      ## wideboost param -- one of 'I', 'In', 'R', 'Rn'
+    'extra_dims':1,   ## wideboost param -- integer >= -output_dim
+    'beta_eta': 0.01, ## wideboost param -- learning rate for B. Unstable, set to 0 to start.
+    'output_dim': 4,  ## wideboost param -- Y must be in a 2D format (ie not a vector of categories)
+    'objective':'manybinary:logistic',  ## treat response columns as separate binary problems
+    'eval_metric':['many_logloss']      ## average binary logloss across columns
+}
 
 num_round = 100
-watchlist = [(dtrain,'train'),(dtest,'test')]
+watchlist = [((xtrain, ytrain),'train'),((xtest, ytest),'test')]
 wxgb_results = dict()
-bst = wxgb.train(param, dtrain, num_round,watchlist,evals_result=wxgb_results)
+bst = wxgb.fit(xtrain, ytrain, param, num_round, watchlist, evals_result=wxgb_results, verbose_eval=10)
 ```
-### LightGBM back-end
-
-```
-import lightgbm as lgb
-from wideboost.wrappers import wlgb
-from pydataset import data
-import numpy as np
-
-########
-## Get and format the data
-DAT = np.asarray(data('Yogurt'))
-X = DAT[:,0:9]
-Y = np.zeros([X.shape[0],1])
-Y[DAT[:,9] == 'dannon'] = 1
-Y[DAT[:,9] == 'hiland'] = 2
-Y[DAT[:,9] == 'weight'] = 3
-
-n = X.shape[0]
-np.random.seed(123)
-train_idx = np.random.choice(np.arange(n),round(n*0.5),replace=False)
-test_idx = np.setdiff1d(np.arange(n),train_idx)
-
-train_data = lgb.Dataset(X[train_idx,:],label=Y[train_idx,0])
-test_data = lgb.Dataset(X[test_idx,:],label=Y[test_idx,0])
-#########
-
-#########
-## Set parameters and run wide boosting
-
-param = {'btype':'I',      ## wideboost param -- one of 'I', 'In', 'R', 'Rn'
-         'extra_dims':10,  ## wideboost param -- integer >= 0
-         'objective':'multiclass',
-         'metric':'multi_error',
-         'num_class':4,
-         'learning_rate': 0.1
-        }
-
-wlgb_results = dict()
-bst = wlgb.train(param, train_data, valid_sets=test_data, num_boost_round=100, evals_result=wlgb_results)
-```
-
-## Explainers
-
-As a way to interpret wideboost models, we connect to basic functionality from [SHAP](https://github.com/slundberg/shap). Example here:
-```
-from wideboost.explainers.shap import WTreeExplainer
-import shap
-
-explainer = WTreeExplainer(bst)
-shap_values = explainer.shap_values(data('Yogurt').iloc[0:1,0:9])
-
-shap.initjs()
-print(bst.predict(xgb.DMatrix(np.asarray(data('Yogurt'))[0:1,0:9])))
-shap.force_plot(explainer.expected_value[3],shap_values[3][0,:],data('Yogurt').iloc[0,0:9])
-```
-![wideboost-shap](/.github/wideboost-shap.png)
 
 ## Parameter Explanations
-`'btype'` indicates how to initialize the beta matrix. Settings are `'I'`, `'In'`, `'R'`, `'Rn'`.
 
-`'extra_dims'` integer indicating how many "wide" dimensions are used.  When `'extra_dims'` is set to `0` (and `'btype'` is set to `'I'`) then wide boosting is equivalent to standard gradient boosting.
+- `'btype'` indicates how to initialize the beta matrix. Settings are `'I'`, `'In'`, `'R'`, `'Rn'`.
+- `'beta_eta'` learning rate for the beta matrix. Sometimes unstable. Start with 0.
+- `'output_dim'` width of Y. All Y need to be in 2D matrix format and onehotted if doing categorical prediction.
+- `'extra_dims'` integer indicating how many "wide" dimensions are used. When `'extra_dims'` is set to `0` (and `'btype'` is set to `'I'` and `'beta_eta' ` is `0`) then wide boosting is equivalent to standard gradient boosting.
 
-For more details see the documentation.
+## New Objectives
 
-## Documentation
+- `'multi:squarederror'` multidimension output regression.
+- `'manybinary:logistic'` loss is independent logloss average across response columns
 
-https://mthorrell.github.io/wideboost/
+## New Evals
+
+- `'many_logloss'` logloss averaged across response columns
+- `'many_auc'` auc averaged across response columns
 
 ## Reference
 
 https://arxiv.org/pdf/2007.09855.pdf
+
+Analyses included in the paper are in the examples/paper_examples/ folder.
