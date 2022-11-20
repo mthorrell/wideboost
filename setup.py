@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wideboost",
-    version="0.4.0",
+    version="0.4.1",
     author="Michael Horrell",
     author_email="mthorrell@github.com",
     description="Implements Wide Boosting functions for popular boosting packages",
