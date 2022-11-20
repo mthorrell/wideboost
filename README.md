@@ -43,7 +43,7 @@ param = {
     'eta':0.1,
     'btype':'I',      ## wideboost param -- one of 'I', 'In', 'R', 'Rn'
     'extra_dims':1,   ## wideboost param -- integer >= -output_dim
-    'beta_eta': 0.01, ## wideboost param -- learning rate for B. Unstable, set to 0 to start.
+    'beta_eta': 0.01, ## wideboost param -- learning rate for B. Can be unstable -- set to 0 to start.
     'output_dim': 4,  ## wideboost param -- Y must be in a 2D format (ie not a vector of categories)
     'objective':'manybinary:logistic',  ## treat response columns as separate binary problems
     'eval_metric':['many_logloss']      ## average binary logloss across columns
