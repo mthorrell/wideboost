@@ -77,10 +77,9 @@ def fit(
     params = param.copy()
 
     if len(evals) > 1:
-        # TODO remove this horrible hack asap
-        row_counts = [eval_set[0][0].shape[0] for eval_set in evals]
-        assert len(row_counts) == len(set(row_counts)), (
-            'evals currently does not work when eval sets have same row counts'
+        eval_names = [eval[1] for eval in evals]
+        assert len(eval_names) == len(set(eval_names)), (
+            'eval sets need distinct names'
         )
 
     # Overwrite/set needed params
@@ -254,12 +253,19 @@ def update_beta(X, B, G, H, eta):
     return B + eta * newB
 
 
+class named_dmatrix(xgb.DMatrix):
+    def __init__(self, name, **kwargs):
+        super(named_dmatrix, self).__init__(**kwargs)
+        self.name = name
+
+
 def _to_xgb_evals(evals, n_trees_per_round):
     return [
         (
-            xgb.DMatrix(
-                dataset[0][0],
-                label=np.zeros(dataset[0][0].shape[0] * n_trees_per_round)
+            named_dmatrix(
+                name=dataset[1],
+                data=dataset[0][0],
+                label=np.zeros(dataset[0][0].shape[0] * n_trees_per_round),
             ), dataset[1]
         )
         for dataset in evals

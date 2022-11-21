@@ -79,8 +79,7 @@ def many_auc(preds, dtrain, obj, Y2D):
 
 
 def _get_valid_y(dtrain, Y2D):
-    # awful hack
-    return [
-        Y2D[k] for k in Y2D.keys()
-        if Y2D[k].shape[0] == dtrain.num_row()
-    ][0]
+    # still a hack
+    # TODO improve code structure
+    eval_idx = dtrain.name
+    return Y2D[eval_idx]
